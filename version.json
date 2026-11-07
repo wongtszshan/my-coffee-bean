@@ -1,0 +1,5 @@
+{
+  "version": "1.5.0",
+  "released": "2026-11-07",
+  "notes": "PWA checks this manifest on startup and resumes, using network-first page updates."
+}
