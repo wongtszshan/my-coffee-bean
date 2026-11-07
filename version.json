@@ -1,5 +1,5 @@
 {
-  "version": "1.5.0",
+  "version": "1.5.1",
   "released": "2026-11-07",
-  "notes": "PWA checks this manifest on startup and resumes, using network-first page updates."
+  "notes": "Fix iOS brew form date field, recipe picker and mobile widths without touching stored coffee data."
 }
