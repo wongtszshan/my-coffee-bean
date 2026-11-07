@@ -78,7 +78,7 @@ function download(name,content,type){const a=document.createElement("a"),u=URL.c
 function exportData(){download("coffee-archive-"+today()+".json",JSON.stringify({format:"coffee-archive",version:1,exported:new Date().toISOString(),...db},null,2),"application/json");toast("JSON 备份已导出")}
 function csv(){const rows=[["日期","咖啡豆","烘焙商","使用粉量g","水量g","水温","冲煮方式","评价","备注"],...db.brews.map(b=>{const x=bean(lot(b.lotId)?.beanId);return[b.date,x?.name||"",x?.roaster||"",b.dose,b.water,b.temp,b.method,b.rating,b.notes]})];download("coffee-brews-"+today()+".csv","\ufeff"+rows.map(r=>r.map(c=>'"'+String(c??"").replaceAll('"','""')+'"').join(",")).join("\r\n"),"text/csv;charset=utf-8")}
 function importData(el){const f=el.files?.[0];if(!f)return;const reader=new FileReader();reader.onload=()=>{try{const d=JSON.parse(reader.result);if(!["beans","lots","recipes","brews","adjustments"].every(k=>Array.isArray(d[k])))throw Error("bad schema");if(!confirm("导入将覆盖当前本地数据。请确认你已备份现有记录。"))return;db={beans:d.beans,lots:d.lots,recipes:d.recipes,brews:d.brews,adjustments:d.adjustments,gear:Array.isArray(d.gear)?d.gear:[]};save();closeModal();go("home");toast("备份导入成功")}catch(e){toast("文件格式不正确，未导入")}};reader.readAsText(f)}
-function openSettings(){modal("Settings / 设置",'<div class="card"><strong>关于存储</strong><p class="mini muted">这是离线优先的应用，资料先保存在本地；成功连接 Worker 后，新增或修改记录会尝试自动同步到 GitHub 私库。清除网站数据可能丢失记录。强烈建议定期导出 JSON 备份。</p></div><div class="toolbar"><button class="btn" onclick="exportData()">导出 JSON 备份</button><button class="btn secondary" onclick="csv()">导出冲煮 CSV</button></div><div class="fg"><label>从 JSON 备份恢复（覆盖现有数据）</label><input type="file" class="field" accept=".json,application/json" onchange="importData(this)"></div><div class="card"><strong>图标及启动页预留</strong><p class="mini muted">以后替换 assets/icon.svg 和 assets/splash.svg。正式 PNG 图标建议另外制作 192×192、512×512 和 180×180，并更新 manifest 和 Apple touch icon。</p></div><div class="card"><strong>AI 图片识别</strong><p class="mini muted">Claude 图像识别已接入 Worker，上传照片后可点识别按钮；所有字段都能手动核对。不要将 API 密钥写入公开的 GitHub Pages 前端。</p></div><div class="card"><strong>版本 v1.4</strong><p class="mini muted">私人的咖啡收藏、批次管理、配方手册、冲煮计时与自动库存扣减。</p></div>')}
+function openSettings(){modal("Settings / 设置",'<div class="card"><strong>关于存储</strong><p class="mini muted">这是离线优先的应用，资料先保存在本地；成功连接 Worker 后，新增或修改记录会尝试自动同步到 GitHub 私库。清除网站数据可能丢失记录。强烈建议定期导出 JSON 备份。</p></div><div class="toolbar"><button class="btn" onclick="exportData()">导出 JSON 备份</button><button class="btn secondary" onclick="csv()">导出冲煮 CSV</button></div><div class="fg"><label>从 JSON 备份恢复（覆盖现有数据）</label><input type="file" class="field" accept=".json,application/json" onchange="importData(this)"></div><div class="card"><strong>图标及启动页预留</strong><p class="mini muted">以后替换 assets/icon.svg 和 assets/splash.svg。正式 PNG 图标建议另外制作 192×192、512×512 和 180×180，并更新 manifest 和 Apple touch icon。</p></div><div class="card"><strong>AI 图片识别</strong><p class="mini muted">Claude 图像识别已接入 Worker，上传照片后可点识别按钮；所有字段都能手动核对。不要将 API 密钥写入公开的 GitHub Pages 前端。</p></div><div class="card"><strong>版本 v1.5.0</strong><p class="mini muted">私人的咖啡收藏、批次管理、配方手册、冲煮计时与自动库存扣减。</p></div>')}
 
 let apiBase=localStorage.getItem("coffee.api.endpoint")||"",apiKey=localStorage.getItem("coffee.api.remember")==="yes"?(localStorage.getItem("coffee.api.key")||""):"",apiSha="",syncBusy=false,syncPending=false,cloudReady=false,cloudCheckPending=false;
 function apiSettings(){const originalPanel=document.querySelector(".sheet");if(!originalPanel)return;let div=document.createElement("div");div.className="card";div.innerHTML='<strong>☁ GitHub 私库同步与 AI 识别</strong><p class="mini muted">数据存储库：wongtszshan/coffeedatabase。先按仓库 worker/README.md 配置并部署 Cloudflare Worker。默认仅本次使用；若选择在此设备记住口令，将保存在浏览器本地存储，存在网页脚本或设备访问风险。</p><div class="fg"><label>Cloudflare Worker 地址</label><input id="apiBaseInput" class="field" type="url" value="'+esc(apiBase)+'" placeholder="https://your-worker.workers.dev"></div><div class="fg"><label>私人同步口令（SYNC_PASSHRASE）</label><input id="apiKeyInput" class="field" type="password" placeholder="留空则沿用当前口令"></div><label class="mini"><input id="rememberApi" type="checkbox" '+(localStorage.getItem("coffee.api.remember")==="yes"?"checked":"")+' /> 在此设备记住连接口令（安全性低于每次输入）</label><div class="toolbar"><button class="btn secondary" onclick="connectCloud()">连接并检查</button><button class="btn ghost" onclick="pullCloud()">从私库读取</button><button class="btn" onclick="pushCloud()">上传本地数据</button></div><div class="hint" id="cloudStatus">当前：'+(cloudReady?"已连接":"未连接")+'。首次使用请先导出本地 JSON 备份。首次同步需选择读取云端或上传本地，避免误覆盖。</div><p class="hint">AI：Claude 已接入 Worker。上传包装照片后可点击「Claude AI 识别包装并填表」。</p>';originalPanel.appendChild(div)}
@@ -150,7 +150,52 @@ show("Claude 识别完成，已填入 "+count+" 项资料。"+(unmapped.length?"
 finally{if(btn){btn.disabled=false;btn.textContent="✦ Claude AI 识别包装并填表"}}
 }
 
+
+// App code version is independent of coffee-data.json in the private repository.
+const APP_VERSION="1.5.0";
+let updateCheckBusy=false, lastVersionCheck=0;
+function showAppUpdateBanner(){
+  if(document.getElementById("appUpdateNotice"))return;
+  const el=document.createElement("div");
+  el.id="appUpdateNotice";
+  el.setAttribute("role","status");
+  el.style.cssText="position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top) + 10px);z-index:9999;background:#f5f0e4;color:#302b25;border:1px solid #99876c;border-radius:12px;padding:14px;box-shadow:0 5px 24px #0002;font-size:13px";
+  el.innerHTML='<strong>发现新版 Coffee Archive</strong><p style="margin:7px 0">请先保存正在编辑的内容，然后更新。咖啡数据和连接配置不会被清除。</p><button type="button" class="btn" onclick="applyAppUpdate()">立即更新</button> <button type="button" class="btn ghost" onclick="document.getElementById(\'appUpdateNotice\').remove()">稍后</button>';
+  document.body.appendChild(el);
+}
+function applyAppUpdate(){
+  // Re-load through a never-before-used navigation URL to avoid stale PWA app-shell caches.
+  const next=new URL("./",location.href);
+  next.searchParams.set("app_version",String(Date.now()));
+  location.replace(next.href);
+}
+async function checkAppVersion(force=false){
+  if(updateCheckBusy||!navigator.onLine)return;
+  if(!force&&Date.now()-lastVersionCheck<60000)return;
+  lastVersionCheck=Date.now();updateCheckBusy=true;
+  try{
+    if("serviceWorker" in navigator){
+      const registration=await navigator.serviceWorker.getRegistration();
+      if(registration)await registration.update();
+    }
+    const response=await fetch("./version.json?check="+Date.now(),{cache:"no-store",redirect:"follow"});
+    if(!response.ok||!response.headers.get("content-type")?.includes("json"))return;
+    const latest=await response.json();
+    if(!latest||typeof latest.version!=="string")return;
+    if(latest.version!==APP_VERSION){
+      const editing=!!document.querySelector("#modal .sheet")||
+        !!document.querySelector('input[type="file"]:focus');
+      if(editing){showAppUpdateBanner()}else{applyAppUpdate()}
+    }
+  }catch(err){console.warn("Version check unavailable:",err)}
+  finally{updateCheckBusy=false}
+}
+window.addEventListener("load",()=>checkAppVersion(true));
+window.addEventListener("pageshow",()=>checkAppVersion());
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkAppVersion(true)});
+window.addEventListener("focus",()=>checkAppVersion());
+
 if(apiBase&&apiKey){checkCloudForUpdates(true).catch(e=>{cloudReady=false;console.warn("Cloud sync startup:",e.message)})}
 render();setTimeout(()=>$("#splash")?.classList.add("hide"),650);setTimeout(()=>$("#splash")?.remove(),1200);
-if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(console.warn));
+if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).then(reg=>reg.update()).catch(console.warn));
 </script></body></html>
