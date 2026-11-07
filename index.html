@@ -183,6 +183,11 @@ async function checkAppVersion(force=false){
     const latest=await response.json();
     if(!latest||typeof latest.version!=="string")return;
     if(latest.version!==APP_VERSION){
+      // Avoid an infinite refresh loop when GitHub Pages deploys version.json before the page itself.
+      const key="coffee.archive.app.refresh."+latest.version;
+      const previous=Number(sessionStorage.getItem(key)||0);
+      if(Date.now()-previous<180000){showAppUpdateBanner();return}
+      sessionStorage.setItem(key,String(Date.now()));
       const editing=!!document.querySelector("#modal .sheet")||
         !!document.querySelector('input[type="file"]:focus');
       if(editing){showAppUpdateBanner()}else{applyAppUpdate()}
