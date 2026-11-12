@@ -14,7 +14,7 @@
 
 - `GET /data`：读取私有仓库 `coffee-data.json` 与最新 SHA
 - `PUT /data`：传 `{data,sha}` 保存；SHA 有冲突时返回 409，客户端应停止覆盖并重新读取
-- `POST /recognize`：传 `{image:"data:image/jpeg;base64,..."}`，返回 `{fields:{...}}`
+- `POST /recognize`：传 `{images:["data:image/jpeg;base64,..."],text:"烘焙商介绍"}`（最多4张，图片与文字均可单独输入；旧版 `image` 参数仍兼容），返回 `{fields:{...},evidence:{...},warnings:[]}`。**代码变更后需重新部署 Cloudflare Worker**。
 - 请求头：`x-sync-key: 你的独立口令`
 
 不要公开 Worker Secret，不要上传包含凭证的截图。Cloudflare Worker 口令验证适合低流量私人原型，但对于公网长期运行，建议改用 Cloudflare Access / OAuth + 服务端会话，并配合速率限制和访问审计。
