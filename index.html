@@ -49,7 +49,7 @@ function restInfo(l,ref=today()){const age=daysSince(l?.roastDate,ref),raw=l?.re
 function restText(l){const r=restInfo(l);return (r.age==null?"豆龄未知":"烘焙后 "+r.age+" 天")+" · "+esc(r.label)}
 function restFields(l={}){return '<div class="formrow">'+field("建议养豆天数（可留空）","lrest",l.restDays??"","number","例如14或20")+field("烘焙商养豆说明","lrestnote",l.restNote||"","text","例如建议养豆20天")+'</div><p class="hint">按烘焙日期计算；空白代表未知，不会自动猜测。</p>'}
 function getRestDays(){const v=val("lrest");if(v==="")return "";const n=Number(v);if(!Number.isInteger(n)||n<0||n>365){toast("养豆天数需为0至365的整数，或留空");return null}return n}
-function beanRestBadge(b){const ls=db.lots.filter(l=>l.beanId===b.id&&remaining(l.id)>0);if(!ls.length)return "";const rs=ls.map(restInfo);const ready=rs.find(r=>r.remaining!=null&&r.remaining<=0),pending=rs.filter(r=>r.remaining>0).sort((a,b)=>a.remaining-b.remaining)[0];return '<div class="mini" style="margin-top:5px;color:#536b54">'+(ready?"✓ 有批次达到建议养豆期":pending?"◷ 还需 "+pending.remaining+" 天":"养豆建议未设置")+'</div>'}
+function beanRestBadge(b){const ls=db.lots.filter(l=>l.beanId===b.id&&remaining(l.id)>0);if(!ls.length)return "";const rs=ls.map(l=>restInfo(l));const ready=rs.find(r=>r.remaining!=null&&r.remaining<=0),pending=rs.filter(r=>r.remaining>0).sort((a,b)=>a.remaining-b.remaining)[0];return '<div class="mini" style="margin-top:5px;color:#536b54">'+(ready?"✓ 有批次达到建议养豆期":pending?"◷ 还需 "+pending.remaining+" 天":"养豆建议未设置")+'</div>'}
 function orderedBeans(items){return [...items].sort((a,b)=>{const score=x=>{const ls=db.lots.filter(l=>l.beanId===x.id&&remaining(l.id)>0);return ls.some(l=>restInfo(l).remaining!=null&&restInfo(l).remaining<=0)?0:ls.some(l=>restInfo(l).remaining>0)?1:ls.length?2:3};return score(a)-score(b)})}
 let pendingAiLot={},pendingImages=[];
 
