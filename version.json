@@ -1,5 +1,5 @@
 {
-  "version": "1.7.1",
+  "version": "1.7.2",
   "released": "2026-11-12",
-  "notes": "Fix false conflicts after optimizing packaging images; resize cloud photos before sync to satisfy Worker data limit."
+  "notes": "Replace square home sync card with minimal full-width responsive status row; no changes to coffee data or sync API."
 }
