@@ -1,5 +1,5 @@
 {
-  "version": "1.7.0",
+  "version": "1.7.1",
   "released": "2026-11-12",
-  "notes": "Redesigned settings center, real cloud-sync lifecycle and verified GitHub/private data status."
+  "notes": "Fix false conflicts after optimizing packaging images; resize cloud photos before sync to satisfy Worker data limit."
 }
