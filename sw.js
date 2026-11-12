@@ -1,5 +1,5 @@
 // Coffee Archive PWA shell — network-first; private coffee data is not cached here.
-const CACHE="coffee-archive-v1.5.1";
+const CACHE="coffee-archive-v1.6.0";
 const CORE=["./","./index.html","./manifest.webmanifest","./assets/icon.svg","./assets/splash.svg"];
 self.addEventListener("install",event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)));
