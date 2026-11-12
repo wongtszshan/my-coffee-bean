@@ -1,5 +1,5 @@
 {
-  "version": "1.6.0",
+  "version": "1.7.0",
   "released": "2026-11-12",
-  "notes": "Per-batch coffee resting, Claude narrative/multi-image extraction and improved mobile layout."
+  "notes": "Redesigned settings center, real cloud-sync lifecycle and verified GitHub/private data status."
 }
