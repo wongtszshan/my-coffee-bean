@@ -1,5 +1,5 @@
 {
-  "version": "1.5.1",
-  "released": "2026-11-07",
-  "notes": "Fix iOS brew form date field, recipe picker and mobile widths without touching stored coffee data."
+  "version": "1.6.0",
+  "released": "2026-11-12",
+  "notes": "Per-batch coffee resting, Claude narrative/multi-image extraction and improved mobile layout."
 }
