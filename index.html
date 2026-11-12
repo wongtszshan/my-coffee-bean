@@ -32,7 +32,24 @@ select.field{min-width:0;text-overflow:ellipsis;white-space:nowrap}
 .sheethead h2{overflow-wrap:anywhere}
 @media(max-width:400px){.formrow{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:340px){.formrow{grid-template-columns:minmax(0,1fr)}}
-@media(max-width:600px){.bean h3{font-size:clamp(17px,5vw,22px);overflow-wrap:anywhere}.stat{min-width:0}.stat b{font-size:clamp(20px,6vw,28px)}.card.bean{align-items:flex-start}.listline>*{min-width:0;overflow-wrap:anywhere}.sheet{padding-bottom:calc(85px + env(safe-area-inset-bottom))}}\n.sync-banner{width:100%;display:flex;align-items:center;gap:11px;text-align:left;border:1px solid #dcd4c7;border-radius:12px;background:#faf8f3;padding:13px;color:#344438;margin:13px 0;cursor:pointer}.sync-banner>span{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.sync-banner strong{font-size:13px}.sync-banner small{font-size:11px;color:#81796e;overflow-wrap:anywhere}.sync-symbol{font-size:21px}.status-synced{background:#eef3ed;border-color:#bacbbc}.status-failed,.status-conflict,.status-pending{background:#f8f0e2;border-color:#dfc8a0}.sync-title,.settings-heading{font-size:16px;font-weight:650;margin-bottom:7px}#syncDetails .listline{font-size:12px}#syncDetails .listline b{text-align:right;max-width:55%;overflow-wrap:anywhere}details.card>summary{cursor:pointer}details.card[open]>summary{margin-bottom:12px} @media(max-width:520px){.sync-banner{padding:11px}.sheet .toolbar{align-items:stretch}.sheet .toolbar .btn{min-height:40px}}\n</style></head><body>
+@media(max-width:600px){.bean h3{font-size:clamp(17px,5vw,22px);overflow-wrap:anywhere}.stat{min-width:0}.stat b{font-size:clamp(20px,6vw,28px)}.card.bean{align-items:flex-start}.listline>*{min-width:0;overflow-wrap:anywhere}.sheet{padding-bottom:calc(85px + env(safe-area-inset-bottom))}}\n.sync-banner{width:100%;display:flex;align-items:center;gap:11px;text-align:left;border:1px solid #dcd4c7;border-radius:12px;background:#faf8f3;padding:13px;color:#344438;margin:13px 0;cursor:pointer}.sync-banner>span{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.sync-banner strong{font-size:13px}.sync-banner small{font-size:11px;color:#81796e;overflow-wrap:anywhere}.sync-symbol{font-size:21px}.status-synced{background:#eef3ed;border-color:#bacbbc}.status-failed,.status-conflict,.status-pending{background:#f8f0e2;border-color:#dfc8a0}.sync-title,.settings-heading{font-size:16px;font-weight:650;margin-bottom:7px}#syncDetails .listline{font-size:12px}#syncDetails .listline b{text-align:right;max-width:55%;overflow-wrap:anywhere}details.card>summary{cursor:pointer}details.card[open]>summary{margin-bottom:12px} @media(max-width:520px){.sync-banner{padding:11px}.sheet .toolbar{align-items:stretch}.sheet .toolbar .btn{min-height:40px}}\n
+/* v1.7.2: integrated full-width status row, not an isolated square card. */
+#syncOverview{display:block;width:100%;min-width:0;max-width:100%;margin:0;box-sizing:border-box}
+#syncOverview > .sync-line{display:grid!important;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;column-gap:12px;box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:100%!important;min-height:48px;margin:0!important;padding:11px 2px!important;border:0!important;border-bottom:1px solid #ddd7ca!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:#504d45;cursor:pointer;text-align:left;font:inherit;appearance:none;-webkit-appearance:none}
+.sync-line-indicator{display:grid;place-items:center;width:19px;height:19px;border-radius:50%;background:#ece9e0;color:#827a6b;font-size:12px;font-weight:700;line-height:1}
+.status-synced .sync-line-indicator{background:#e5ede2;color:#426b4a}
+.status-conflict .sync-line-indicator,.status-failed .sync-line-indicator{background:#f6e8dc;color:#a05d43}
+.status-pending .sync-line-indicator{background:#f5eddf;color:#95743d}
+.sync-line-content{display:flex;min-width:0;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+.sync-line-content strong{font-size:12px;font-weight:650;line-height:1.5}
+.sync-line-content small{font-size:11px;color:#91877b;line-height:1.5;min-width:0;overflow-wrap:anywhere}
+.sync-line-action{font-size:11px;color:#8d806d;white-space:nowrap}
+.sync-line-action span{margin-left:5px;font-size:16px;vertical-align:-1px}
+#syncOverview>.sync-line:hover{background:rgba(125,112,91,.035)!important}
+#syncOverview>.sync-line:focus-visible{outline:2px solid #7c927e!important;outline-offset:2px}
+@media(max-width:600px){#syncOverview>.sync-line{grid-template-columns:20px minmax(0,1fr) 14px;gap:9px;padding:10px 0!important;min-height:52px}.sync-line-content{display:flex;flex-direction:column;align-items:flex-start;gap:2px}.sync-line-content strong{font-size:12px}.sync-line-content small{font-size:10.5px}.sync-line-action{font-size:0}.sync-line-action span{font-size:17px;margin-left:0}}
+
+</style></head><body>
 <div id="splash" class="splash"><div><img src="./assets/splash.svg" alt="Coffee Archive"><p class="eyebrow">YOUR PRIVATE COFFEE JOURNAL</p></div></div>
 <div class="app"><header class="top"><div><div class="eyebrow">PERSONAL COFFEE COLLECTION</div><div class="brand">Coffee Archive<span style="color:#ad9d81">.</span></div></div><button onclick="openSettings()" aria-label="设置">⚙</button></header><main class="main" id="main"></main></div><nav class="bottom"><div class="navinner" id="nav"></div></nav><div id="modal"></div><div id="toastarea"></div>
 <script>
@@ -114,7 +131,7 @@ function openSettings(){
  '<details class="card"><summary class="settings-heading">⚙ 高级连接设置</summary><p class="hint">仅首次连接或更换凭证需要调整，口令勿公开。</p>'+field("Worker 地址","apiBaseInput",apiBase,"url","https://your-worker.workers.dev")+
  '<div class="fg"><label>同步口令</label><input class="field" id="apiKeyInput" type="password" placeholder="留空沿用当前口令"></div>'+
  '<label class="mini"><input id="rememberApi" type="checkbox" '+(localStorage.getItem("coffee.api.remember")==="yes"?"checked":"")+' /> 在本设备记住口令（风险高于每次输入）</label>'+
- '<div class="toolbar"><button class="btn secondary" onclick="connectCloud()">保存连接并检查</button><button class="btn ghost" onclick="pullCloud()">从私库读取</button><button class="btn ghost" onclick="pushCloud()">上传本机并覆盖云端</button></div><p id="cloudStatus" class="hint"></p></details><p class="hint" style="text-align:center">Coffee Archive v1.7.1</p>');
+ '<div class="toolbar"><button class="btn secondary" onclick="connectCloud()">保存连接并检查</button><button class="btn ghost" onclick="pullCloud()">从私库读取</button><button class="btn ghost" onclick="pushCloud()">上传本机并覆盖云端</button></div><p id="cloudStatus" class="hint"></p></details><p class="hint" style="text-align:center">Coffee Archive v1.7.2</p>');
  updateSyncUI();
 }
 function apiStatus(t){const el=$("#cloudStatus");if(el)el.textContent=t;toast(t);updateSyncUI()}
@@ -165,7 +182,7 @@ function statusInfo(){let type=syncState;
  const item=labels[type]||labels.unknown;if(type==="synced"&&cloudPhotoOptimized)return {type,title:"资料已同步（图片已优化）",desc:"云端照片已压缩，咖啡资料与本机一致"};return {type,title:item[0],desc:item[1]};
 }
 function dateStamp(){if(!lastSyncStamp)return "尚无记录";const d=new Date(lastSyncStamp);return Number.isFinite(d.getTime())?d.toLocaleString("zh-CN",{hour12:false}):"尚无记录"}
-function syncSummary(){const v=statusInfo();return '<button class="sync-banner status-'+v.type+'" onclick="openSettings()"><b class="sync-symbol">☁</b><span><strong>'+esc(v.title)+'</strong><small>'+esc(v.desc)+'</small></span><b>›</b></button>'}
+function syncSummary(){const v=statusInfo(),symbol=({synced:"✓",syncing:"↻",checking:"◷",conflict:"!",failed:"!",offline:"○",pending:"↑",unknown:"○",disconnected:"○"})[v.type]||"○";return '<button type="button" class="sync-line status-'+v.type+'" onclick="openSettings()" aria-label="'+esc(v.title+"，"+v.desc)+"，查看设置"+'"><span class="sync-line-indicator" aria-hidden="true">'+symbol+'</span><span class="sync-line-content"><strong>'+esc(v.title)+'</strong><small>'+esc(v.desc)+'</small></span><span class="sync-line-action" aria-hidden="true">查看设置 <span>›</span></span></button>'}
 function syncDetails(){const x=statusInfo();return '<div class="sync-title">'+esc(x.title)+'</div><p class="hint">'+esc(x.desc)+'</p><div class="listline"><span>本地存储</span><b>'+(localSaved?"已保存":"保存失败")+'</b></div><div class="listline"><span>Worker 连接</span><b>'+(cloudReady?"已验证":apiBase&&apiKey?"待验证":"未连接")+'</b></div><div class="listline"><span>GitHub 私库</span><b>'+(x.type==="synced"?"已同步":x.type==="syncing"?"上传中":x.type==="conflict"?"版本冲突":"未确认")+'</b></div><div class="listline"><span>最近核对成功</span><b>'+esc(dateStamp())+'</b></div><div class="listline"><span>待同步</span><b>'+(dirty()?"存在本地更改":"无检测到的更改")+'</b></div>'+(syncError?'<p class="hint" style="color:#a14d40">错误：'+esc(syncError)+'</p>':"")}
 function updateSyncUI(){const el=$("#syncOverview");if(el)el.innerHTML=syncSummary();const details=$("#syncDetails");if(details)details.innerHTML=syncDetails();const ai=$("#aiState");if(ai)ai.textContent=aiLastResult==="success"?"本次 AI 请求成功":aiLastResult==="failed"?"最近一次 AI 请求失败":"已配置代理，尚未验证 AI 请求";}
 function confirmed(data){localStorage.setItem(SYNC_BASELINE,fingerprint(data));lastSyncStamp=new Date().toISOString();localStorage.setItem(SYNC_STAMP,lastSyncStamp);syncState="synced";syncError="";updateSyncUI()}
@@ -248,7 +265,7 @@ async function recognizeCoffee(){
 }
 
 // App code version is independent of coffee-data.json in the private repository.
-const APP_VERSION="1.7.1";
+const APP_VERSION="1.7.2";
 let updateCheckBusy=false, lastVersionCheck=0;
 function showAppUpdateBanner(){
   if(document.getElementById("appUpdateNotice"))return;
