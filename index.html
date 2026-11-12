@@ -114,7 +114,7 @@ function openSettings(){
  '<details class="card"><summary class="settings-heading">⚙ 高级连接设置</summary><p class="hint">仅首次连接或更换凭证需要调整，口令勿公开。</p>'+field("Worker 地址","apiBaseInput",apiBase,"url","https://your-worker.workers.dev")+
  '<div class="fg"><label>同步口令</label><input class="field" id="apiKeyInput" type="password" placeholder="留空沿用当前口令"></div>'+
  '<label class="mini"><input id="rememberApi" type="checkbox" '+(localStorage.getItem("coffee.api.remember")==="yes"?"checked":"")+' /> 在本设备记住口令（风险高于每次输入）</label>'+
- '<div class="toolbar"><button class="btn secondary" onclick="connectCloud()">保存连接并检查</button><button class="btn ghost" onclick="pullCloud()">从私库读取</button><button class="btn ghost" onclick="pushCloud()">上传本机并覆盖云端</button></div><p id="cloudStatus" class="hint"></p></details><p class="hint" style="text-align:center">Coffee Archive v1.7.0</p>');
+ '<div class="toolbar"><button class="btn secondary" onclick="connectCloud()">保存连接并检查</button><button class="btn ghost" onclick="pullCloud()">从私库读取</button><button class="btn ghost" onclick="pushCloud()">上传本机并覆盖云端</button></div><p id="cloudStatus" class="hint"></p></details><p class="hint" style="text-align:center">Coffee Archive v1.7.1</p>');
  updateSyncUI();
 }
 function apiStatus(t){const el=$("#cloudStatus");if(el)el.textContent=t;toast(t);updateSyncUI()}
@@ -135,12 +135,34 @@ let apiBase=localStorage.getItem("coffee.api.endpoint")||"",apiKey=localStorage.
 const SYNC_STAMP="coffee.archive.last.synced.at";
 let syncState="unknown",syncError="",lastSyncStamp=localStorage.getItem(SYNC_STAMP)||"",localSaved=true,aiLastResult="untested",syncChecking=false;
 function dirty(){const b=localStorage.getItem(SYNC_BASELINE);return !!b&&b!==fingerprint(db)}
+// Compare coffee metadata separately: GitHub uses smaller copies of packaging photos to stay under the Worker data limit.
+function metadataFingerprint(data){const clean={...data,beans:(data.beans||[]).map(b=>{const {photo,...rest}=b;return rest})};return fingerprint(clean)}
+let cloudPhotoOptimized=false;
+async function prepareSyncPayload(original){
+ const copy=JSON.parse(JSON.stringify(original));
+ for(const bean of copy.beans||[]){
+   if(!bean.photo||!bean.photo.startsWith("data:image/"))continue;
+   bean.photo=await new Promise((resolve,reject)=>{
+     const img=new Image();img.onload=()=>{try{
+       const canvas=document.createElement("canvas"),scale=Math.min(1,700/img.width,700/img.height);
+       canvas.width=Math.max(1,Math.round(img.width*scale));
+       canvas.height=Math.max(1,Math.round(img.height*scale));
+       canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
+       resolve(canvas.toDataURL("image/jpeg",.70))
+     }catch(e){reject(e)}};
+     img.onerror=()=>reject(Error("包装照片无法处理，请导出备份后检查图片"));
+     img.src=bean.photo;
+   });
+ }
+ if(JSON.stringify(copy).length>=740000)throw Error("图片压缩后仍超过私库同步限制，请先备份并减少图片大小");
+ return copy;
+}
 function statusInfo(){let type=syncState;
  if(!navigator.onLine)type="offline";
  else if(syncBusy)type="syncing";else if(syncChecking)type="checking";else if(cloudCheckPending)type="conflict";else if(dirty()&&syncState!=="failed")type="pending";
  else if(!apiBase||!apiKey)type="disconnected";else if(type==="synced"&&!cloudReady)type="unknown";
  const labels={offline:["离线使用中","本地资料仍可使用，联网后再检查"],syncing:["正在上传 GitHub","等待私库确认本次上传"],checking:["正在检查云端","核对版本及数据内容"],conflict:["本地与私库内容不同","自动上传暂停，需选择保留哪份数据"],pending:["存在未同步修改","本地已保存，等待云端确认"],failed:["同步或连接失败","本地资料保留，尚未确认上传"],disconnected:["未连接私库","当前仅本地保存"],synced:["所有数据已同步","最近一次云端核对确认一致"],unknown:["云端状态未验证","请检查连接与数据版本"]};
- const item=labels[type]||labels.unknown;return {type,title:item[0],desc:item[1]};
+ const item=labels[type]||labels.unknown;if(type==="synced"&&cloudPhotoOptimized)return {type,title:"资料已同步（图片已优化）",desc:"云端照片已压缩，咖啡资料与本机一致"};return {type,title:item[0],desc:item[1]};
 }
 function dateStamp(){if(!lastSyncStamp)return "尚无记录";const d=new Date(lastSyncStamp);return Number.isFinite(d.getTime())?d.toLocaleString("zh-CN",{hour12:false}):"尚无记录"}
 function syncSummary(){const v=statusInfo();return '<button class="sync-banner status-'+v.type+'" onclick="openSettings()"><b class="sync-symbol">☁</b><span><strong>'+esc(v.title)+'</strong><small>'+esc(v.desc)+'</small></span><b>›</b></button>'}
@@ -162,7 +184,10 @@ async function checkCloudForUpdates(quiet=false){
   const r=await apiRequest("/data");if(!validCloudData(r.data))throw Error("云端数据格式异常");
   apiSha=r.sha;cloudReady=true;
   const current=fingerprint(db),remote=fingerprint(r.data),baseline=localStorage.getItem(SYNC_BASELINE);
-  if(current===remote){cloudCheckPending=false;confirmed(db);document.getElementById("cloudNotice")?.remove();return}
+  if(current===remote||metadataFingerprint(db)===metadataFingerprint(r.data)){
+   cloudPhotoOptimized=current!==remote;cloudCheckPending=false;confirmed(db);
+   document.getElementById("cloudNotice")?.remove();return
+  }
   if((baseline&&baseline===current)||(!db.beans.length&&!db.lots.length&&!db.recipes.length&&!db.brews.length&&!db.adjustments.length)){applyRemoteData(r.data,r.sha);if(!quiet)toast("已自动读取私库最新内容");return}
   cloudCheckPending=true;syncState="conflict";syncError="本地与云端数据不同";cloudBanner("本地与私库存在不同内容。先导出 JSON 备份，再选择读取远端或上传本地。");
  }catch(e){cloudReady=false;syncState="failed";syncError=e.message;throw e}
@@ -189,9 +214,10 @@ async function syncToCloud(){
  if(!cloudReady||!apiSha||cloudCheckPending){updateSyncUI();return}
  syncBusy=true;syncState="syncing";updateSyncUI();
  try{
-  const copy=JSON.parse(JSON.stringify(db)),fp=fingerprint(copy);
+  const original=JSON.parse(JSON.stringify(db)),fp=fingerprint(original);
+  const copy=await prepareSyncPayload(original);
   const result=await apiRequest("/data","PUT",{data:copy,sha:apiSha});
-  apiSha=result.sha;confirmed(copy);
+  apiSha=result.sha;cloudPhotoOptimized=fingerprint(original)!==fingerprint(copy);confirmed(original);
   if(fingerprint(db)!==fp){syncPending=true;syncState="pending"}
  }catch(e){cloudReady=false;cloudCheckPending=/409|conflict|SHA/i.test(e.message||"");syncState=cloudCheckPending?"conflict":"failed";syncError=e.message||"上传异常";apiStatus("同步失败："+syncError+"；本地数据仍在")}
  finally{syncBusy=false;updateSyncUI();if(syncPending&&cloudReady&&!cloudCheckPending){syncPending=false;syncToCloud()}}
@@ -222,7 +248,7 @@ async function recognizeCoffee(){
 }
 
 // App code version is independent of coffee-data.json in the private repository.
-const APP_VERSION="1.7.0";
+const APP_VERSION="1.7.1";
 let updateCheckBusy=false, lastVersionCheck=0;
 function showAppUpdateBanner(){
   if(document.getElementById("appUpdateNotice"))return;
