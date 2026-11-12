@@ -32,7 +32,7 @@ select.field{min-width:0;text-overflow:ellipsis;white-space:nowrap}
 .sheethead h2{overflow-wrap:anywhere}
 @media(max-width:400px){.formrow{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:340px){.formrow{grid-template-columns:minmax(0,1fr)}}
-@media(max-width:600px){.bean h3{font-size:clamp(17px,5vw,22px);overflow-wrap:anywhere}.stat{min-width:0}.stat b{font-size:clamp(20px,6vw,28px)}.card.bean{align-items:flex-start}.listline>*{min-width:0;overflow-wrap:anywhere}.sheet{padding-bottom:calc(85px + env(safe-area-inset-bottom))}}\n</style></head><body>
+@media(max-width:600px){.bean h3{font-size:clamp(17px,5vw,22px);overflow-wrap:anywhere}.stat{min-width:0}.stat b{font-size:clamp(20px,6vw,28px)}.card.bean{align-items:flex-start}.listline>*{min-width:0;overflow-wrap:anywhere}.sheet{padding-bottom:calc(85px + env(safe-area-inset-bottom))}}\n.sync-banner{width:100%;display:flex;align-items:center;gap:11px;text-align:left;border:1px solid #dcd4c7;border-radius:12px;background:#faf8f3;padding:13px;color:#344438;margin:13px 0;cursor:pointer}.sync-banner>span{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.sync-banner strong{font-size:13px}.sync-banner small{font-size:11px;color:#81796e;overflow-wrap:anywhere}.sync-symbol{font-size:21px}.status-synced{background:#eef3ed;border-color:#bacbbc}.status-failed,.status-conflict,.status-pending{background:#f8f0e2;border-color:#dfc8a0}.sync-title,.settings-heading{font-size:16px;font-weight:650;margin-bottom:7px}#syncDetails .listline{font-size:12px}#syncDetails .listline b{text-align:right;max-width:55%;overflow-wrap:anywhere}details.card>summary{cursor:pointer}details.card[open]>summary{margin-bottom:12px} @media(max-width:520px){.sync-banner{padding:11px}.sheet .toolbar{align-items:stretch}.sheet .toolbar .btn{min-height:40px}}\n</style></head><body>
 <div id="splash" class="splash"><div><img src="./assets/splash.svg" alt="Coffee Archive"><p class="eyebrow">YOUR PRIVATE COFFEE JOURNAL</p></div></div>
 <div class="app"><header class="top"><div><div class="eyebrow">PERSONAL COFFEE COLLECTION</div><div class="brand">Coffee Archive<span style="color:#ad9d81">.</span></div></div><button onclick="openSettings()" aria-label="设置">⚙</button></header><main class="main" id="main"></main></div><nav class="bottom"><div class="navinner" id="nav"></div></nav><div id="modal"></div><div id="toastarea"></div>
 <script>
@@ -59,13 +59,13 @@ function nav(){const items=[["home","⌂","首页"],["beans","◈","咖啡豆"],
 function pill(s){return s?'<span class="chip">'+esc(s)+'</span>':""}
 function beanTile(b){const lots=db.lots.filter(l=>l.beanId===b.id),stock=lots.reduce((s,l)=>s+Math.max(0,remaining(l.id)),0),original=lots.reduce((s,l)=>s+Number(l.weight||0),0);return '<article class="card bean" onclick="viewBean(\''+b.id+'\')" style="cursor:pointer">'+(b.photo?'<img class="beanpic" src="'+b.photo+'" alt="咖啡包装">':'<div class="beanpic placeholder">C</div>')+'<div style="flex:1;min-width:0"><div class="eyebrow">'+esc(b.country||"COFFEE")+" / "+esc(b.region||"ORIGIN")+'</div><h3>'+esc(b.name)+'</h3><div class="mini muted">'+esc(b.roaster||"未填写烘焙商")+'</div><div>'+pill(b.process)+pill(b.roast)+'</div>'+beanRestBadge(b)+'<div class="mini" style="margin-top:7px">库存 '+fmt(stock)+' g · '+lots.length+' 个批次</div><div class="meter"><span style="width:'+Math.min(100,Math.max(0,original?stock/original*100:0))+'%"></span></div></div></article>'}
 function head(t,n){return '<div class="sectionhead"><h2>'+t+'</h2>'+(n||"")+'</div>'}
-function home(){const active=db.beans.filter(b=>db.lots.some(l=>l.beanId===b.id&&remaining(l.id)>0));const recent=[...db.brews].sort((a,b)=>b.created.localeCompare(a.created)).slice(0,3);return '<section class="hero"><div class="eyebrow">'+new Intl.DateTimeFormat("en",{month:"long",day:"numeric",year:"numeric"}).format(new Date())+'</div><h1>Your Coffee Journal.</h1><div class="muted mini">每一包咖啡豆，都有值得留下的故事。</div></section><div class="stats"><div class="stat"><b>'+stocked().length+'</b><small>在库批次</small></div><div class="stat"><b>'+db.beans.length+'</b><small>收藏咖啡豆</small></div><div class="stat"><b>'+db.brews.length+'</b><small>冲煮记录</small></div></div><div class="actions"><button class="action" onclick="addBean()"><span class="round">＋</span><strong>添加咖啡豆</strong><small>拍照或手动建档</small></button><button class="action" onclick="startBrew()"><span class="round">◉</span><strong>开始冲煮</strong><small>配方、计时与记录</small></button></div>'+head("Currently Brewing",'<button onclick="go(\'beans\')">查看全部 ↗</button>')+(active.length?'<div class="cardlist">'+orderedBeans(active).slice(0,4).map(beanTile).join("")+'</div>':'<div class="empty"><b>你的咖啡收藏，从这里开始。</b>添加第一包咖啡豆，记录你的日常冲煮。</div>')+head("Recent Brews",'<button onclick="go(\'brew\')">全部日志 ↗</button>')+(recent.length?recent.map(b=>'<div class="listline"><div><strong>'+esc(bean(lot(b.lotId)?.beanId)?.name||"已删除的咖啡豆")+'</strong><div class="mini muted">'+dt(b.date)+' · '+fmt(b.dose)+'g / '+fmt(b.water)+'g · '+esc(b.method||"手冲")+'</div></div><button class="link" onclick="viewBrew(\''+b.id+'\')">查看</button></div>').join(""):'<p class="muted mini">还没有冲煮记录。</p>')}
+function home(){const active=db.beans.filter(b=>db.lots.some(l=>l.beanId===b.id&&remaining(l.id)>0));const recent=[...db.brews].sort((a,b)=>b.created.localeCompare(a.created)).slice(0,3);return '<section class="hero"><div class="eyebrow">'+new Intl.DateTimeFormat("en",{month:"long",day:"numeric",year:"numeric"}).format(new Date())+'</div><h1>Your Coffee Journal.</h1><div class="muted mini">每一包咖啡豆，都有值得留下的故事。</div></section><div id="syncOverview">'+syncSummary()+'</div><div class="stats"><div class="stat"><b>'+stocked().length+'</b><small>在库批次</small></div><div class="stat"><b>'+db.beans.length+'</b><small>收藏咖啡豆</small></div><div class="stat"><b>'+db.brews.length+'</b><small>冲煮记录</small></div></div><div class="actions"><button class="action" onclick="addBean()"><span class="round">＋</span><strong>添加咖啡豆</strong><small>拍照或手动建档</small></button><button class="action" onclick="startBrew()"><span class="round">◉</span><strong>开始冲煮</strong><small>配方、计时与记录</small></button></div>'+head("Currently Brewing",'<button onclick="go(\'beans\')">查看全部 ↗</button>')+(active.length?'<div class="cardlist">'+orderedBeans(active).slice(0,4).map(beanTile).join("")+'</div>':'<div class="empty"><b>你的咖啡收藏，从这里开始。</b>添加第一包咖啡豆，记录你的日常冲煮。</div>')+head("Recent Brews",'<button onclick="go(\'brew\')">全部日志 ↗</button>')+(recent.length?recent.map(b=>'<div class="listline"><div><strong>'+esc(bean(lot(b.lotId)?.beanId)?.name||"已删除的咖啡豆")+'</strong><div class="mini muted">'+dt(b.date)+' · '+fmt(b.dose)+'g / '+fmt(b.water)+'g · '+esc(b.method||"手冲")+'</div></div><button class="link" onclick="viewBrew(\''+b.id+'\')">查看</button></div>').join(""):'<p class="muted mini">还没有冲煮记录。</p>')}
 function beans(){let list=db.beans.filter(b=>(b.name+" "+b.country+" "+b.region+" "+b.roaster+" "+b.flavors+" "+b.process).toLowerCase().includes(search.toLowerCase()));if(filter==="stock")list=list.filter(b=>db.lots.some(l=>l.beanId===b.id&&remaining(l.id)>0));return head("Bean Collection",'<button onclick="addBean()">＋ 添加</button>')+'<input class="field search" placeholder="搜索名称、烘焙商、国家、风味…" value="'+esc(search)+'" oninput="search=this.value;updateBeanList()"><div class="tabs"><button class="'+(filter==="all"?"selected":"")+'" onclick="filter=\'all\';render()">所有豆子</button><button class="'+(filter==="stock"?"selected":"")+'" onclick="filter=\'stock\';render()">当前库存</button></div><div id="beanlist">'+(list.length?'<div class="cardlist">'+orderedBeans(list).map(beanTile).join("")+'</div>':'<div class="empty"><b>暂时没有匹配的咖啡豆</b>试试添加第一包吧。</div>')+'</div>'}
 function updateBeanList(){const list=db.beans.filter(b=>(b.name+" "+b.country+" "+b.region+" "+b.roaster+" "+b.flavors+" "+b.process).toLowerCase().includes(search.toLowerCase())&&(filter!=="stock"||db.lots.some(l=>l.beanId===b.id&&remaining(l.id)>0)));$("#beanlist").innerHTML=list.length?'<div class="cardlist">'+orderedBeans(list).map(beanTile).join("")+'</div>':'<div class="empty">没有匹配结果</div>'}
 function brewPage(){return head("Brew Journal",'<button onclick="startBrew()">＋ 开始冲煮</button>')+'<div class="actions"><button class="action" onclick="startBrew()"><span class="round">◷</span><strong>冲煮并计时</strong><small>记录实际参数</small></button><button class="action" onclick="editRecipe()"><span class="round">▤</span><strong>新建配方</strong><small>保存常用冲煮方案</small></button></div>'+head("My Recipes")+(db.recipes.filter(r=>!r.external).length?db.recipes.filter(r=>!r.external).map(recipeLine).join(""):'<p class="mini muted">暂时没有我的配方。</p>')+head("Brew History")+(db.brews.length?[...db.brews].reverse().map(b=>'<div class="listline"><div><strong>'+esc(bean(lot(b.lotId)?.beanId)?.name||"已删除的咖啡豆")+'</strong><div class="mini muted">'+dt(b.date)+' · '+fmt(b.dose)+'g / '+fmt(b.water)+'g · '+esc(b.method)+'</div></div><button class="link" onclick="viewBrew(\''+b.id+'\')">详情</button></div>').join(""):'<p class="mini muted">完成第一杯后，冲煮历史就会出现在这里。</p>')}
 function recipeLine(r){return '<div class="listline"><div><strong>'+esc(r.title)+'</strong><div class="mini muted">'+esc(r.method||"手冲")+' · '+fmt(r.dose)+'g / '+fmt(r.water)+'g · '+esc(r.source||"个人配方")+'</div></div><button class="link" onclick="viewRecipe(\''+r.id+'\')">查看</button></div>'}
 function library(){return head("Recipe Library",'<button onclick="editRecipe(null,true)">＋ 收藏配方</button>')+'<p class="muted mini">收集烘焙商、咖啡师与朋友分享的冲煮建议；保留原始链接。</p>'+ (db.recipes.filter(r=>r.external).length?db.recipes.filter(r=>r.external).map(recipeLine).join(""):'<div class="empty"><b>建立你的冲煮灵感库</b>可以手动整理截图和外部链接中的配方。</div>')}
-function render(){nav();$("#main").innerHTML=({home,beans,brew:brewPage,library})[page]()}
+function render(){nav();$("#main").innerHTML=({home,beans,brew:brewPage,library})[page]();updateSyncUI()}
 function modal(title,body){$("#modal").innerHTML='<div class="sheet"><div class="sheethead"><div><div class="eyebrow">COFFEE ARCHIVE</div><h2>'+esc(title)+'</h2></div><button onclick="closeModal()" aria-label="关闭">×</button></div>'+body+'</div>';$(".sheet").scrollTop=0}
 function closeModal(){stopTimer();$("#modal").innerHTML="";render()}
 function val(id){return document.getElementById(id)?.value?.trim()||""}
@@ -106,49 +106,97 @@ function download(name,content,type){const a=document.createElement("a"),u=URL.c
 function exportData(){download("coffee-archive-"+today()+".json",JSON.stringify({format:"coffee-archive",version:1,exported:new Date().toISOString(),...db},null,2),"application/json");toast("JSON 备份已导出")}
 function csv(){const rows=[["日期","咖啡豆","烘焙商","使用粉量g","水量g","水温","冲煮方式","评价","备注"],...db.brews.map(b=>{const x=bean(lot(b.lotId)?.beanId);return[b.date,x?.name||"",x?.roaster||"",b.dose,b.water,b.temp,b.method,b.rating,b.notes]})];download("coffee-brews-"+today()+".csv","\ufeff"+rows.map(r=>r.map(c=>'"'+String(c??"").replaceAll('"','""')+'"').join(",")).join("\r\n"),"text/csv;charset=utf-8")}
 function importData(el){const f=el.files?.[0];if(!f)return;const reader=new FileReader();reader.onload=()=>{try{const d=JSON.parse(reader.result);if(!["beans","lots","recipes","brews","adjustments"].every(k=>Array.isArray(d[k])))throw Error("bad schema");if(!confirm("导入将覆盖当前本地数据。请确认你已备份现有记录。"))return;db={beans:d.beans,lots:d.lots,recipes:d.recipes,brews:d.brews,adjustments:d.adjustments,gear:Array.isArray(d.gear)?d.gear:[]};save();closeModal();go("home");toast("备份导入成功")}catch(e){toast("文件格式不正确，未导入")}};reader.readAsText(f)}
-function openSettings(){modal("Settings / 设置",'<div class="card"><strong>关于存储</strong><p class="mini muted">这是离线优先的应用，资料先保存在本地；成功连接 Worker 后，新增或修改记录会尝试自动同步到 GitHub 私库。清除网站数据可能丢失记录。强烈建议定期导出 JSON 备份。</p></div><div class="toolbar"><button class="btn" onclick="exportData()">导出 JSON 备份</button><button class="btn secondary" onclick="csv()">导出冲煮 CSV</button></div><div class="fg"><label>从 JSON 备份恢复（覆盖现有数据）</label><input type="file" class="field" accept=".json,application/json" onchange="importData(this)"></div><div class="card"><strong>图标及启动页预留</strong><p class="mini muted">以后替换 assets/icon.svg 和 assets/splash.svg。正式 PNG 图标建议另外制作 192×192、512×512 和 180×180，并更新 manifest 和 Apple touch icon。</p></div><div class="card"><strong>AI 图片识别</strong><p class="mini muted">Claude 图像识别已接入 Worker，上传照片后可点识别按钮；所有字段都能手动核对。不要将 API 密钥写入公开的 GitHub Pages 前端。</p></div><div class="card"><strong>版本 v1.6.0</strong><p class="mini muted">私人的咖啡收藏、批次管理、配方手册、冲煮计时与自动库存扣减。</p></div>')}
 
-let apiBase=localStorage.getItem("coffee.api.endpoint")||"",apiKey=localStorage.getItem("coffee.api.remember")==="yes"?(localStorage.getItem("coffee.api.key")||""):"",apiSha="",syncBusy=false,syncPending=false,cloudReady=false,cloudCheckPending=false;
-function apiSettings(){const originalPanel=document.querySelector(".sheet");if(!originalPanel)return;let div=document.createElement("div");div.className="card";div.innerHTML='<strong>☁ GitHub 私库同步与 AI 识别</strong><p class="mini muted">数据存储库：wongtszshan/coffeedatabase。先按仓库 worker/README.md 配置并部署 Cloudflare Worker。默认仅本次使用；若选择在此设备记住口令，将保存在浏览器本地存储，存在网页脚本或设备访问风险。</p><div class="fg"><label>Cloudflare Worker 地址</label><input id="apiBaseInput" class="field" type="url" value="'+esc(apiBase)+'" placeholder="https://your-worker.workers.dev"></div><div class="fg"><label>私人同步口令（SYNC_PASSHRASE）</label><input id="apiKeyInput" class="field" type="password" placeholder="留空则沿用当前口令"></div><label class="mini"><input id="rememberApi" type="checkbox" '+(localStorage.getItem("coffee.api.remember")==="yes"?"checked":"")+' /> 在此设备记住连接口令（安全性低于每次输入）</label><div class="toolbar"><button class="btn secondary" onclick="connectCloud()">连接并检查</button><button class="btn ghost" onclick="pullCloud()">从私库读取</button><button class="btn" onclick="pushCloud()">上传本地数据</button></div><div class="hint" id="cloudStatus">当前：'+(cloudReady?"已连接":"未连接")+'。首次使用请先导出本地 JSON 备份。首次同步需选择读取云端或上传本地，避免误覆盖。</div><p class="hint">AI：Claude 已接入 Worker。上传包装照片后可点击「Claude AI 识别包装并填表」。</p>';originalPanel.appendChild(div)}
-const originalSettings=openSettings;openSettings=function(){originalSettings();apiSettings()};
-function apiStatus(t){const x=$("#cloudStatus");if(x)x.textContent=t;toast(t)}
-function configureApi(){const a=val("apiBaseInput").replace(/\/+$/,"");if(!/^https:\/\/[a-z0-9.-]+(?::443)?$/i.test(a)){apiStatus("请输入 https:// 开头的 Worker 地址");return false}apiBase=a;localStorage.setItem("coffee.api.endpoint",a);if(val("apiKeyInput"))apiKey=val("apiKeyInput");if(!apiKey){apiStatus("请填写独立同步口令");return false}if($("#rememberApi")?.checked){localStorage.setItem("coffee.api.remember","yes");localStorage.setItem("coffee.api.key",apiKey)}else{localStorage.removeItem("coffee.api.remember");localStorage.removeItem("coffee.api.key")}return true}
+function openSettings(){
+ modal("设置",'<div class="card"><div class="settings-heading">☁ 云端同步</div><p class="hint">GitHub 私人仓库 · coffeedatabase</p><div id="syncDetails"></div><div class="toolbar"><button class="btn secondary" onclick="connectCloud()">检查云端状态</button><button class="btn" onclick="manualSync()">手动同步</button></div><p class="hint">连接成功不等于数据已同步；只有远程核对成功才显示已同步。</p></div>'+
+ '<div class="card"><div class="settings-heading">✦ AI 识别服务</div><p class="mini muted">Claude · Cloudflare Worker</p><p class="hint" id="aiState"></p></div>'+
+ '<div class="card"><div class="settings-heading">▤ 数据备份与恢复</div><div class="toolbar"><button class="btn secondary" onclick="exportData()">导出 JSON 备份</button><button class="btn ghost" onclick="csv()">导出冲煮 CSV</button></div><div class="fg"><label>从备份恢复（覆盖当前本地数据）</label><input class="field" type="file" accept=".json,application/json" onchange="importData(this)"></div></div>'+
+ '<details class="card"><summary class="settings-heading">⚙ 高级连接设置</summary><p class="hint">仅首次连接或更换凭证需要调整，口令勿公开。</p>'+field("Worker 地址","apiBaseInput",apiBase,"url","https://your-worker.workers.dev")+
+ '<div class="fg"><label>同步口令</label><input class="field" id="apiKeyInput" type="password" placeholder="留空沿用当前口令"></div>'+
+ '<label class="mini"><input id="rememberApi" type="checkbox" '+(localStorage.getItem("coffee.api.remember")==="yes"?"checked":"")+' /> 在本设备记住口令（风险高于每次输入）</label>'+
+ '<div class="toolbar"><button class="btn secondary" onclick="connectCloud()">保存连接并检查</button><button class="btn ghost" onclick="pullCloud()">从私库读取</button><button class="btn ghost" onclick="pushCloud()">上传本机并覆盖云端</button></div><p id="cloudStatus" class="hint"></p></details><p class="hint" style="text-align:center">Coffee Archive v1.7.0</p>');
+ updateSyncUI();
+}
+function apiStatus(t){const el=$("#cloudStatus");if(el)el.textContent=t;toast(t);updateSyncUI()}
+function configureApi(){const a=val("apiBaseInput").replace(/\/+$/,"");if(!/^https:\/\/[a-z0-9.-]+(?::443)?$/i.test(a)){apiStatus("请输入 https:// 开头的 Worker 地址");return false}
+ if(a!==apiBase||val("apiKeyInput")){cloudReady=false;apiSha="";cloudCheckPending=false;syncState="unknown"}
+ apiBase=a;localStorage.setItem("coffee.api.endpoint",a);if(val("apiKeyInput"))apiKey=val("apiKeyInput");if(!apiKey){apiStatus("请填写同步口令");return false}
+ if($("#rememberApi")?.checked){localStorage.setItem("coffee.api.remember","yes");localStorage.setItem("coffee.api.key",apiKey)}else{localStorage.removeItem("coffee.api.remember");localStorage.removeItem("coffee.api.key")}
+ updateSyncUI();return true;
+}
+async function manualSync(){if(syncBusy||syncChecking){toast("同步正在进行");return}if(!apiBase||!apiKey){toast("请先在高级设置配置同步连接");return}
+ if(cloudCheckPending){toast("数据有冲突，先处理云端与本地差异");return}
+ if(!cloudReady){await connectCloud();return}
+ if(dirty())await syncToCloud();
+ else try{await checkCloudForUpdates();apiStatus("云端状态核对完成")}catch(e){syncState="failed";syncError=e.message;updateSyncUI();apiStatus("检查失败："+e.message)}
+}
+
+const SYNC_STAMP="coffee.archive.last.synced.at";
+let syncState="unknown",syncError="",lastSyncStamp=localStorage.getItem(SYNC_STAMP)||"",localSaved=true,aiLastResult="untested",syncChecking=false;
+function dirty(){const b=localStorage.getItem(SYNC_BASELINE);return !!b&&b!==fingerprint(db)}
+function statusInfo(){let type=syncState;
+ if(!navigator.onLine)type="offline";
+ else if(syncBusy)type="syncing";else if(syncChecking)type="checking";else if(cloudCheckPending)type="conflict";else if(dirty()&&syncState!=="failed")type="pending";
+ else if(!apiBase||!apiKey)type="disconnected";else if(type==="synced"&&!cloudReady)type="unknown";
+ const labels={offline:["离线使用中","本地资料仍可使用，联网后再检查"],syncing:["正在上传 GitHub","等待私库确认本次上传"],checking:["正在检查云端","核对版本及数据内容"],conflict:["本地与私库内容不同","自动上传暂停，需选择保留哪份数据"],pending:["存在未同步修改","本地已保存，等待云端确认"],failed:["同步或连接失败","本地资料保留，尚未确认上传"],disconnected:["未连接私库","当前仅本地保存"],synced:["所有数据已同步","最近一次云端核对确认一致"],unknown:["云端状态未验证","请检查连接与数据版本"]};
+ const item=labels[type]||labels.unknown;return {type,title:item[0],desc:item[1]};
+}
+function dateStamp(){if(!lastSyncStamp)return "尚无记录";const d=new Date(lastSyncStamp);return Number.isFinite(d.getTime())?d.toLocaleString("zh-CN",{hour12:false}):"尚无记录"}
+function syncSummary(){const v=statusInfo();return '<button class="sync-banner status-'+v.type+'" onclick="openSettings()"><b class="sync-symbol">☁</b><span><strong>'+esc(v.title)+'</strong><small>'+esc(v.desc)+'</small></span><b>›</b></button>'}
+function syncDetails(){const x=statusInfo();return '<div class="sync-title">'+esc(x.title)+'</div><p class="hint">'+esc(x.desc)+'</p><div class="listline"><span>本地存储</span><b>'+(localSaved?"已保存":"保存失败")+'</b></div><div class="listline"><span>Worker 连接</span><b>'+(cloudReady?"已验证":apiBase&&apiKey?"待验证":"未连接")+'</b></div><div class="listline"><span>GitHub 私库</span><b>'+(x.type==="synced"?"已同步":x.type==="syncing"?"上传中":x.type==="conflict"?"版本冲突":"未确认")+'</b></div><div class="listline"><span>最近核对成功</span><b>'+esc(dateStamp())+'</b></div><div class="listline"><span>待同步</span><b>'+(dirty()?"存在本地更改":"无检测到的更改")+'</b></div>'+(syncError?'<p class="hint" style="color:#a14d40">错误：'+esc(syncError)+'</p>':"")}
+function updateSyncUI(){const el=$("#syncOverview");if(el)el.innerHTML=syncSummary();const details=$("#syncDetails");if(details)details.innerHTML=syncDetails();const ai=$("#aiState");if(ai)ai.textContent=aiLastResult==="success"?"本次 AI 请求成功":aiLastResult==="failed"?"最近一次 AI 请求失败":"已配置代理，尚未验证 AI 请求";}
+function confirmed(data){localStorage.setItem(SYNC_BASELINE,fingerprint(data));lastSyncStamp=new Date().toISOString();localStorage.setItem(SYNC_STAMP,lastSyncStamp);syncState="synced";syncError="";updateSyncUI()}
+
 async function apiRequest(path,method="GET",payload){if(!apiBase||!apiKey)throw Error("请先在设置中连接 Cloudflare Worker");const r=await fetch(apiBase+path,{method,headers:{"Content-Type":"application/json","x-sync-key":apiKey},body:payload?JSON.stringify(payload):undefined});let j=await r.json();if(!r.ok)throw Error(j.error||"HTTP "+r.status);return j}
 const SYNC_BASELINE="coffee.archive.last.synced.fingerprint";
 function fingerprint(data){const s=JSON.stringify({beans:data.beans,lots:data.lots,recipes:data.recipes,brews:data.brews,adjustments:data.adjustments,gear:data.gear||[]});let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return String(h>>>0)}
 function cloudBanner(text){let el=document.getElementById("cloudNotice");if(!el){el=document.createElement("div");el.id="cloudNotice";el.className="notice";el.style="position:sticky;top:0;z-index:6;margin:0 20px 10px";document.querySelector(".main")?.prepend(el)}el.innerHTML='<strong>☁ 云端资料有更新</strong><p class="mini">'+esc(text)+'</p><div class="toolbar"><button class="btn secondary" onclick="pullCloud(true)">检查并更新本机资料</button><button class="btn ghost" onclick="document.getElementById(\'cloudNotice\')?.remove()">稍后</button></div>'}
-function applyRemoteData(remote,sha){if(!validCloudData(remote))throw Error("云端数据格式异常");db={...db,...remote};apiSha=sha;coreSave();localStorage.setItem(SYNC_BASELINE,fingerprint(db));document.getElementById("cloudNotice")?.remove();render()}
+
+function applyRemoteData(remote,sha){if(!validCloudData(remote))throw Error("云端数据格式异常");db={...db,...remote};apiSha=sha;localSaved=coreSave();if(!localSaved)throw Error("本地保存失败");cloudReady=true;cloudCheckPending=false;confirmed(db);document.getElementById("cloudNotice")?.remove();render()}
 async function checkCloudForUpdates(quiet=false){
-if(!apiBase||!apiKey)return;
-const r=await apiRequest("/data");
-if(!validCloudData(r.data))throw Error("云端数据格式不正确");
-const oldSha=apiSha;apiSha=r.sha;cloudReady=true;
-const current=fingerprint(db),cloud=fingerprint(r.data),baseline=localStorage.getItem(SYNC_BASELINE);
-if(current===cloud){localStorage.setItem(SYNC_BASELINE,cloud);return}
-if((baseline&&baseline===current)||(!db.beans.length&&!db.lots.length&&!db.recipes.length&&!db.brews.length)){
-applyRemoteData(r.data,r.sha);if(!quiet)toast("已自动载入 GitHub 私库最新数据");return
+ if(!apiBase||!apiKey)return;
+ if(syncBusy)throw Error("正在上传，请稍后检查");
+ syncChecking=true;syncState="checking";updateSyncUI();
+ try{
+  const r=await apiRequest("/data");if(!validCloudData(r.data))throw Error("云端数据格式异常");
+  apiSha=r.sha;cloudReady=true;
+  const current=fingerprint(db),remote=fingerprint(r.data),baseline=localStorage.getItem(SYNC_BASELINE);
+  if(current===remote){cloudCheckPending=false;confirmed(db);document.getElementById("cloudNotice")?.remove();return}
+  if((baseline&&baseline===current)||(!db.beans.length&&!db.lots.length&&!db.recipes.length&&!db.brews.length&&!db.adjustments.length)){applyRemoteData(r.data,r.sha);if(!quiet)toast("已自动读取私库最新内容");return}
+  cloudCheckPending=true;syncState="conflict";syncError="本地与云端数据不同";cloudBanner("本地与私库存在不同内容。先导出 JSON 备份，再选择读取远端或上传本地。");
+ }catch(e){cloudReady=false;syncState="failed";syncError=e.message;throw e}
+ finally{syncChecking=false;updateSyncUI()}
 }
-cloudCheckPending=true;
-cloudBanner("手机本地记录与 GitHub 私库不同。为了避免覆盖未同步的数据，请确认后再更新。");
+async function connectCloud(){if($("#apiBaseInput")&&!configureApi())return;if(!apiBase||!apiKey){apiStatus("请在高级设置中输入 Worker 地址和同步口令");return}
+ try{await checkCloudForUpdates();apiStatus(cloudCheckPending?"已连接，但发现云端和本地不同，请处理":"云端检查完成")}catch(e){apiStatus("连接检查失败："+e.message)}
 }
-async function connectCloud(){if(!configureApi())return;try{await checkCloudForUpdates();apiStatus("连接成功，已检查云端最新数据。")}catch(e){cloudReady=false;apiStatus("连接失败："+e.message)}}
-async function pullCloud(fromBanner=false){
-if(!cloudReady){apiStatus("请先连接并检查");return}
-if(!confirm("从私库读取将覆盖本机的咖啡记录。若有尚未同步的真实数据，请先到设置导出 JSON 备份。确定继续？"))return;
-try{const r=await apiRequest("/data");applyRemoteData(r.data,r.sha);cloudCheckPending=false;closeModal();toast("已从私库加载最新资料")}catch(e){apiStatus("读取失败："+e.message)}
+async function pullCloud(){if(!apiBase||!apiKey){apiStatus("请先配置连接");return}
+ if(!confirm("从私库读取将覆盖本机咖啡资料。请先导出本地 JSON 备份，确定继续？"))return;
+ syncChecking=true;updateSyncUI();
+ try{const r=await apiRequest("/data");applyRemoteData(r.data,r.sha);closeModal();toast("已读取云端数据")}
+ catch(e){syncState="failed";syncError=e.message;apiStatus("读取失败："+e.message)}
+ finally{syncChecking=false;updateSyncUI()}
 }
 function validCloudData(d){return d&&["beans","lots","brews","recipes","adjustments"].every(k=>Array.isArray(d[k]))}
-async function pushCloud(){if(!cloudReady){apiStatus("请先连接并检查");return}if(cloudCheckPending){apiStatus("云端与本地数据不同，请先处理同步冲突");return}if(!confirm("把此浏览器的数据覆盖到 GitHub 私库？如另一设备有新记录，请先从私库读取。"))return;await syncToCloud()}
+async function pushCloud(){if(!cloudReady||!apiSha){apiStatus("请先检查连接和云端版本");return}
+ if(cloudCheckPending&&!confirm("本地与云端内容不同。确定用本机数据覆盖？请先备份云端。"))return;
+ if(!confirm("用本机数据上传到 GitHub 私库？若版本过期，GitHub 会拒绝覆盖。"))return;
+ cloudCheckPending=false;await syncToCloud()
+}
 async function syncToCloud(){
-if(syncBusy){syncPending=true;return}
-if(!cloudReady||!apiSha||cloudCheckPending)return;
-syncBusy=true;
-try{const copy=JSON.parse(JSON.stringify(db));const result=await apiRequest("/data","PUT",{data:copy,sha:apiSha});apiSha=result.sha;localStorage.setItem(SYNC_BASELINE,fingerprint(copy));apiStatus("已同步到 coffeedatabase 私库")}
-catch(e){cloudReady=false;cloudCheckPending=true;apiStatus("同步失败："+e.message+"；请重新连接并检查云端，避免覆盖其他设备修改")}
-finally{syncBusy=false;if(syncPending&&cloudReady){syncPending=false;syncToCloud()}}
+ if(syncBusy){syncPending=true;return}
+ if(!cloudReady||!apiSha||cloudCheckPending){updateSyncUI();return}
+ syncBusy=true;syncState="syncing";updateSyncUI();
+ try{
+  const copy=JSON.parse(JSON.stringify(db)),fp=fingerprint(copy);
+  const result=await apiRequest("/data","PUT",{data:copy,sha:apiSha});
+  apiSha=result.sha;confirmed(copy);
+  if(fingerprint(db)!==fp){syncPending=true;syncState="pending"}
+ }catch(e){cloudReady=false;cloudCheckPending=/409|conflict|SHA/i.test(e.message||"");syncState=cloudCheckPending?"conflict":"failed";syncError=e.message||"上传异常";apiStatus("同步失败："+syncError+"；本地数据仍在")}
+ finally{syncBusy=false;updateSyncUI();if(syncPending&&cloudReady&&!cloudCheckPending){syncPending=false;syncToCloud()}}
 }
 let syncJob=0;const coreSave=save;
-save=function(){const ok=coreSave();if(ok&&cloudReady&&!cloudCheckPending){clearTimeout(syncJob);syncJob=setTimeout(()=>syncToCloud(),1400)}return ok};
+save=function(){const ok=coreSave();localSaved=ok;if(ok){if(cloudReady&&!cloudCheckPending){syncState="pending";clearTimeout(syncJob);syncJob=setTimeout(()=>syncToCloud(),1400)}else if(syncState==="synced")syncState="pending"}updateSyncUI();return ok};
 
 async function recognizeCoffee(){
  const status=$("#aiStatus"),btn=$("#recognizeBtn"),show=t=>{if(status)status.textContent=t};
@@ -168,12 +216,12 @@ async function recognizeCoffee(){
   const ev=Object.entries(r.evidence||{}).filter(([k,v])=>v).map(([k,v])=>'<div><strong>'+esc(k)+'</strong>：'+esc(v)+'</div>').join("");
   $("#aiEvidence").innerHTML=(ev?'<details style="margin-top:10px"><summary>查看字段原文依据</summary>'+ev+'</details>':"")+(warnings.length?'<div style="margin-top:8px;color:#985f33">请核对：'+warnings.map(esc).join("；")+'</div>':"");
   show("已填入 "+n+" 个字段"+(pendingAiLot.roastDate?"；识别烘焙日 "+pendingAiLot.roastDate:"")+(pendingAiLot.restDays!=null?"；养豆建议 "+pendingAiLot.restDays+" 天":"")+"。请核对后保存，新批次会预填日期及养豆期。");
- }catch(e){show("识别失败："+(e.message||String(e))+"。请确认 Cloudflare Worker 已部署最新代码。")}
+ aiLastResult="success";updateSyncUI();}catch(e){aiLastResult="failed";updateSyncUI();show("识别失败："+(e.message||String(e))+"。请确认 Cloudflare Worker 已部署最新代码。")}
  finally{if(btn){btn.disabled=false;btn.textContent="✦ Claude AI 理解内容并填表"}}
 }
 
 // App code version is independent of coffee-data.json in the private repository.
-const APP_VERSION="1.6.0";
+const APP_VERSION="1.7.0";
 let updateCheckBusy=false, lastVersionCheck=0;
 function showAppUpdateBanner(){
   if(document.getElementById("appUpdateNotice"))return;
