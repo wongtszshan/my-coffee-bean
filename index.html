@@ -131,6 +131,7 @@ async function manualSync(){if(syncBusy||syncChecking){toast("同步正在进行
  else try{await checkCloudForUpdates();apiStatus("云端状态核对完成")}catch(e){syncState="failed";syncError=e.message;updateSyncUI();apiStatus("检查失败："+e.message)}
 }
 
+let apiBase=localStorage.getItem("coffee.api.endpoint")||"",apiKey=localStorage.getItem("coffee.api.remember")==="yes"?(localStorage.getItem("coffee.api.key")||""):"",apiSha="",syncBusy=false,syncPending=false,cloudReady=false,cloudCheckPending=false;
 const SYNC_STAMP="coffee.archive.last.synced.at";
 let syncState="unknown",syncError="",lastSyncStamp=localStorage.getItem(SYNC_STAMP)||"",localSaved=true,aiLastResult="untested",syncChecking=false;
 function dirty(){const b=localStorage.getItem(SYNC_BASELINE);return !!b&&b!==fingerprint(db)}
